@@ -1,46 +1,35 @@
 #include <iostream>
+#include "SFML/Graphics.hpp"
 #include "EventManager.hpp"
-#include "Listener.hpp"
-#include "RenderWindowListenTarget.hpp"
 
-
-void foo(SizeEvent::Args args) {
-	std::cout << "Burasi foo fonksiyonun icidir." << args.height << " "<< args.width << std::endl;
+void MouseButtonPressed_Callback(const sf::Event& args){
+	std::cout 	<< "Here is in function of MouseButtonPressed_Callback. " 
+				<< args.mouseButton.button << " "
+				<< args.mouseButton.x << " "
+				<< args.mouseButton.y << std::endl;
 }
 
+
 int main() {
+	sf::RenderWindow window(sf::VideoMode(800,600), "Test");
+	EventManager em(window);
+	em.add(sf::Event::KeyPressed,[](const sf::Event& event ){
+		std::cout <<"Key Event->code: " <<  event.key.code << std::endl;
+	});
+
+	em.add(sf::Event::MouseEntered);// default nothings
 	
-	try {
-		sf::RenderWindow window(sf::VideoMode(800, 600), "Title",sf::Style::Close);
-		EventManager em(new Listener(new RenderWindowListenTarget(window)));
-		std::cout << em.add<SizeEvent>(foo);
+	em.add(sf::Event::MouseButtonPressed, MouseButtonPressed_Callback);
 
-		// event ekleme alternatifi
-		em.add<MouseMoveEvent>([](MouseMoveEvent::Args args) {
-			// yapýlmasý istenen iþlemler
-			std::cout << "Burasi main fonksiyonu icindeki MouseMove eventini takip eden lambda fonksiyonu";
-		});
+	em.add(sf::Event::Closed,[&](const sf::Event&){
+		window.close();
+	});
 
-		// event ekleme alternatifi
-		em.add<ClosedEvent>([](ClosedEvent::Args args) {
-			// yapýlmasý istenen iþlemler
-			std::cout << "Burasi main fonksiyonu icindeki Closed eventini takip eden lambda fonksiyonu";
-		});
-			
-
-		while (window.isOpen()) {
-			em.listen();
-		}
+	while(window.isOpen()){
+		em.listen();
+		window.clear();
+		window.display();
 	}
-	catch (const char* ex) {
-		std::cout << ex;
-	}
-	
-	
-	
 
-	
-
-	system("pause");
 	return 0;
 }
